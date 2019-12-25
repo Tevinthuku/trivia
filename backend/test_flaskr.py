@@ -45,33 +45,45 @@ class TriviaTestCase(unittest.TestCase):
         return self.client().post("/questions", data=json.dumps(question),
                                   content_type="application/json")
 
+    def getNumberOfQuestions(self):
+        res = self.client().get("/questions")
+        data = json.loads(res.data)
+        return data.get("totalQuestions")
+
     def test_get_categories(self):
         res = self.client().get("/categories")
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
-        self.assertTrue(len(data["categories"]))
+        self.assertEqual(len(data["categories"]), 6)
 
     def test_get_questions(self):
         res = self.client().get("/questions")
         data = json.loads(res.data)
         self.assertEqual(data["status"], 200)
-        self.assertTrue(len(data["questions"]))
+        self.assertEqual(len(data["questions"]), 10)
 
     def test_delete_specific_question(self):
         res = self.createQuestion()
         data = json.loads(res.data)
         question = data.get("question")
         question_id = question.get("id")
+        original_number_of_questions = self.getNumberOfQuestions()
         res = self.client().delete(f'/questions/{question_id}')
         self.assertEqual(res.status_code, 200)
+        number_of_questions = self.getNumberOfQuestions()
+        self.assertEqual(number_of_questions, (original_number_of_questions-1))
 
     def test_delete_nonexistent_question(self):
         res = self.client().delete("/questions/10000")
         self.assertEqual(res.status_code, 400)
 
     def test_question_creation(self):
+        original_number_of_questions = self.getNumberOfQuestions()
         res = self.createQuestion()
+        new_number_of_questions = self.getNumberOfQuestions()
         self.assertEqual(res.status_code, 200)
+        self.assertEqual(new_number_of_questions,
+                         (original_number_of_questions+1))
 
     def test_search(self):
         self.createQuestion()

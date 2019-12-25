@@ -116,10 +116,10 @@ def create_app(test_config=None):
             Question.id.notin_(previous_questions))
         category = quiz_category.get("id")
         if(category == 0):
-            question = questions.first()
+            question = random.choice(questions.all())
         else:
-            question = questions.filter(
-                Question.category == category).first()
+            question = random.choice(questions.filter(
+                Question.category == category).all())
 
         if question:
             question = question.format()
