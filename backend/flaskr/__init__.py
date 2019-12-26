@@ -69,14 +69,14 @@ def create_app(test_config=None):
     @app.route("/questions", methods=["POST"])
     def create_question():
         req = request.get_json()
-        question = req.get("question")
-        answer = req.get("answer")
-        difficulty = req.get("difficulty")
-        category = req.get("category")
-        question = Question(question=question, answer=answer,
-                            difficulty=difficulty, category=category)
 
         try:
+            question = req["question"]
+            answer = req["answer"]
+            difficulty = req["difficulty"]
+            category = req["category"]
+            question = Question(question=question, answer=answer,
+                                difficulty=difficulty, category=category)
             question.insert()
             return jsonify({
                 "success": True,
@@ -115,14 +115,15 @@ def create_app(test_config=None):
         questions = Question.query.filter(
             Question.id.notin_(previous_questions))
         category = quiz_category.get("id")
-        if(category == 0):
-            question = random.choice(questions.all())
-        else:
-            question = random.choice(questions.filter(
-                Question.category == category).all())
-
-        if question:
-            question = question.format()
+        try:
+            if(category == 0):
+                question = random.choice(questions.all())
+            else:
+                question = random.choice(questions.filter(
+                    Question.category == category).all())
+                question = question.format()
+        except:
+            question = None
 
         return jsonify({
             "question": question
